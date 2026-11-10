@@ -381,19 +381,19 @@
         }
       }
     },
-    "Click to reveal the date in Calendar" : {
-      "comment" : "[AX] Tell the user to click the grid to reveal the selected date in the Calendar app",
+    "Click to select the date" : {
+      "comment" : "[AX] Tell the user to click the grid to move the highlight to that date",
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "点击来在日历应用中显示该日期"
+            "value" : "点击来选中该日期"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "點選來在日曆程式中顯示該日期"
+            "value" : "點選來選取該日期"
           }
         }
       }

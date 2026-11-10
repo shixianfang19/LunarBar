@@ -235,17 +235,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
   }
 
   @MainActor
-  func openCalendar(targetDate: Date) {
-    guard presentedPopover?.isShown == true else {
-      return
-    }
-
-    // Clear states and open the Calendar app
-    presentedPopover?.close()
-    CalendarManager.default.revealDateInCalendar(targetDate)
-  }
-
-  @MainActor
   func countDaysBetween(targetDate: Date) {
     guard let startDate = countingDate, targetDate != startDate else {
       countingDate = targetDate
@@ -279,6 +268,7 @@ extension AppDelegate: NSPopoverDelegate {
     popoverClosedTime = Date.timeIntervalSinceReferenceDate
     statusIconPressTime = nil
     countingDate = nil
+    DateHighlight.reset()
     cancelHighlight()
   }
 }

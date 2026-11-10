@@ -31,6 +31,14 @@ final class DateGridView: NSView {
   init() {
     super.init(frame: .zero)
 
+    // Move the highlight to the clicked day by refreshing the visible cells
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(dateHighlightDidChange(_:)),
+      name: DateHighlight.didChangeNotification,
+      object: nil
+    )
+
     dataSource = NSCollectionViewDiffableDataSource<Section, Model>(collectionView: collectionView) { [weak self] (collectionView: NSCollectionView, indexPath: IndexPath, object: Model) -> NSCollectionViewItem? in
       let cell = collectionView.makeItem(withIdentifier: DateGridCell.reuseIdentifier, for: indexPath)
       if let cell = cell as? DateGridCell {
@@ -58,6 +66,10 @@ final class DateGridView: NSView {
     fatalError("init(coder:) has not been implemented")
   }
 
+  deinit {
+    NotificationCenter.default.removeObserver(self)
+  }
+
   override func layout() {
     super.layout()
     collectionView.frame = bounds
@@ -65,6 +77,11 @@ final class DateGridView: NSView {
 
   override func viewDidChangeEffectiveAppearance() {
     super.viewDidChangeEffectiveAppearance()
+    updateAppearance()
+  }
+
+  // periphery:ignore:parameters notification
+  @objc func dateHighlightDidChange(_ notification: Notification) {
     updateAppearance()
   }
 

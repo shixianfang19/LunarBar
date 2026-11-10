@@ -30,7 +30,7 @@ final class DateGridCell: NSCollectionViewItem {
     let button = CustomButton()
     button.setAccessibilityElement(true)
     button.setAccessibilityRole(.button)
-    button.setAccessibilityHelp(Localized.UI.accessibilityClickToRevealDate)
+    button.setAccessibilityHelp(Localized.UI.accessibilityClickToSelectDate)
 
     return button
   }()
@@ -185,9 +185,8 @@ extension DateGridCell {
       lunarLabel.stringValue = Localized.Calendar.chineseNewYearsEve
     }
 
-    // Show the focus ring only for today
-    let isDateToday = Calendar.solar.isDate(cellDate, inSameDayAs: currentDate)
-    focusRingView.isHidden = !isDateToday
+    // The focus ring is updated in updateAppearance, drawn on the highlighted date
+    // (today by default), so that clicking a day moves it there
 
     // Reload event dot views
     eventView.updateEvents(cellEvents)
@@ -287,6 +286,9 @@ extension DateGridCell {
       ? .secondaryDateLabel : Colors.primaryLabel
     solarLabel.textColor = textColor
     lunarLabel.textColor = textColor
+
+    // Show the focus ring on the highlighted date, today by default
+    focusRingView.isHidden = !Calendar.solar.isDate(cellDate, inSameDayAs: DateHighlight.highlightedDate)
     updateBorders()
   }
 
@@ -312,7 +314,7 @@ private extension DateGridCell {
   func setUp() {
     view.addSubview(containerView)
     containerView.addAction { [weak self] in
-      self?.revealDateInCalendar()
+      self?.selectDate()
     }
 
     containerView.onMouseHover = { [weak self] isHovered in
@@ -391,13 +393,19 @@ private extension DateGridCell {
     focusRingView.layer?.borderColor = Colors.controlAccent.resolvedColor(with: view.effectiveAppearance).cgColor
   }
 
-  func revealDateInCalendar() {
+  func selectDate() {
     guard let cellDate else {
       return Logger.assertFail("Missing cellDate to continue")
     }
 
+    // Move the highlight to the clicked date, without opening the Calendar app
+    NSHapticFeedbackManager.defaultPerformer.perform(
+      .generic,
+      performanceTime: .now
+    )
+
     dismissDetails()
-    (NSApp.delegate as? AppDelegate)?.openCalendar(targetDate: cellDate)
+    DateHighlight.select(cellDate)
   }
 
   @objc func onLongPress(_ recognizer: NSPressGestureRecognizer) {

@@ -1,0 +1,37 @@
+name: Build unsigned DMG
+
+on:
+  push:
+    branches:
+      - build/click-to-highlight
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-dmg:
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Run tests
+        run: |
+          xcodebuild test -scheme LunarBarKitTests -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+          xcodebuild test -scheme LunarBarMac -destination 'platform=macOS' CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: Archive app
+        run: |
+          xcodebuild archive -project LunarBar.xcodeproj -scheme LunarBarMac -configuration Release -destination 'generic/platform=macOS' -archivePath "$RUNNER_TEMP/LunarBar.xcarchive" CODE_SIGN_IDENTITY="" CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO
+
+      - name: Create DMG
+        run: |
+          mkdir -p dist
+          hdiutil create -volname LunarBar -srcfolder "$RUNNER_TEMP/LunarBar.xcarchive/Products/Applications/LunarBar.app" -ov -format UDZO dist/LunarBar-unsigned.dmg
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: LunarBar-unsigned-DMG
+          path: dist/LunarBar-unsigned.dmg
+          retention-days: 14
